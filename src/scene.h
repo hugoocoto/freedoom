@@ -14,9 +14,13 @@
 
 #include <GLFW/glfw3.h>
 
+#ifndef GLFW_CURSOR_CAPTURED
+#define GLFW_CURSOR_CAPTURED GLFW_CURSOR_DISABLED
+#endif
+
 #include "settings.h"
 
-static bool locks[1024] = { 0 };
+inline bool locks[1024] = { 0 };
 #define oneclick(__window, __key)                                            \
                 glfwGetKey(__window, __key) == GLFW_RELEASE && locks[__key]) \
         {                                                                    \
@@ -110,9 +114,9 @@ class Scene
 
         void set_camera(Camera *c)
         {
-                for (int i = 0; i < cameras.size(); i++) {
+                for (size_t i = 0; i < cameras.size(); i++) {
                         if (c == cameras.at(i)) {
-                                set_camera(i);
+                                set_camera(static_cast<GLuint>(i));
                                 return;
                         }
                 }
@@ -137,7 +141,7 @@ class Scene
  * to handle all this stuff but there isnt. */
 extern double *interframe_time();
 extern vec2 get_window_size();
-static int mouse_mode = -1;
+inline int mouse_mode = -1;
 
 static void
 cam_movement_input_handler(GLFWwindow *window, Scene *scene)
@@ -199,10 +203,8 @@ cam_movement_input_handler(GLFWwindow *window, Scene *scene)
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
                 glfwSetWindowShouldClose(window, true);
 
-        mat4 m = scene->get_camera()->get_mesh()->get_absolute_model();
         vec3 dirf = -vec3(0, 0, 1);
         vec3 right = vec3(1, 0, 0);
-        vec3 posi = scene->get_camera()->get_position();
         vec3 movement = vec3(0.0f);
 
         // Movimiento

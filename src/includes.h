@@ -1,5 +1,4 @@
-#define LOG_PRINT 0
-#include "../thirdparty/frog/frog.h"
+#include "panic.h"
 
 #include "mesh.h"
 #include "camera.h"
@@ -33,4 +32,3 @@
 #include <string.h>
 #include <string>
 #include <vector>
-

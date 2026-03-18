@@ -1,8 +1,10 @@
 #include "mesh.h"
 #include "camera.h"
+#include "obj_loader.h"
 #include "scene.h"
 #include "settings.h"
 #include "shape.h"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
@@ -13,12 +15,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 
-
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-#include "../thirdparty/load_obj/load_obj.h"
-
 
 vec3
 SphereCollider::get_position()
@@ -50,34 +47,29 @@ vector<Mesh *>
 Mesh::import_obj(const char *path)
 {
         vector<Mesh *> attached_childs;
-        vector<lObject> objs;
-        objs = load_obj(path, LOAD_3_3);
-        if (objs.size() <= 0) {
+        vector<ObjMeshData> objs = load_obj_meshes(path);
+        if (objs.empty()) {
                 printf("Can not load %s\n", path);
                 return attached_childs;
         }
-        lObject current = objs.back();
+        ObjMeshData current = objs.back();
         vao = current.vao;
-        indexes_n = current.index_n;
-        // __shader = current.shader;
-        // model = current.model;
-        name = current.name; /* I can do that because current.name is set using strdup. */
+        indexes_n = current.index_count;
+        name = strdup(current.name.c_str());
 
-        if (current.material && current.material->texture > 0)
-                textures.push_back(current.material->texture);
+        if (!current.diffuse_texture.empty())
+                add_texture_image(current.diffuse_texture.c_str());
         objs.pop_back();
 
-        for (auto obj : objs) {
-                Mesh *m = new Mesh(obj.name, color, printable, need_render, sphere_collider != nullptr);
+        for (const auto &obj : objs) {
+                Mesh *m = new Mesh(strdup(obj.name.c_str()), color, printable, need_render, sphere_collider != nullptr);
                 attached_childs.push_back(m);
-                m->set_vao(obj.vao, obj.index_n);
-                // m->set_model(current.model);
+                m->set_vao(obj.vao, obj.index_count);
                 m->set_scene(scene);
-                obj.shader = __shader;
-                m->set_shader(obj.shader);
+                m->set_shader(__shader);
 
-                if (obj.material && obj.material->texture > 0)
-                        m->add_texture(obj.material->texture);
+                if (!obj.diffuse_texture.empty())
+                        m->add_texture_image(obj.diffuse_texture.c_str());
                 attach(m);
         }
         return attached_childs;
@@ -325,7 +317,7 @@ Mesh::draw(mat4 _model, int _do)
 
                 } else if (texture != 0) {
                         printf("Texture %d failed!\n", texture);
-                        exit(texture);
+                        continue;
                 }
         }
 
@@ -441,19 +433,14 @@ Mesh::add_texture_image(const char *path, int how)
 
         if (image == NULL) {
                 fprintf(stderr, "Failed to load texture '%s'\n", path);
-                exit(0);
-        }
-
-        if (image == NULL) {
-                printf("[ERROR] Material has no image data!\n");
                 return;
         }
 
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, how ?: GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, how ?: GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, how != 0 ? how : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, how != 0 ? how : GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 

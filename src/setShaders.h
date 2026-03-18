@@ -16,7 +16,7 @@
 // Para leer los ficheros de texto plano
 
 
-static char *
+static inline char *
 textFileRead(const char *fn)
 {
         FILE *fichero;
@@ -50,7 +50,7 @@ textFileRead(const char *fn)
 
 // Nos indica e imprime por pantalla si hay algun error al crear el shader o el program
 
-static void
+static inline void
 printShaderInfoLog(GLuint obj)
 {
         int infologLength = 0;
@@ -67,7 +67,7 @@ printShaderInfoLog(GLuint obj)
         }
 }
 
-static void
+static inline void
 printProgramInfoLog(GLuint obj)
 {
         int infologLength = 0;
@@ -85,7 +85,7 @@ printProgramInfoLog(GLuint obj)
 }
 
 
-static GLuint
+[[maybe_unused]] static inline GLuint
 setShaders(const char *nVertx, const char *nFrag)
 {
         // Definicion vertex y fragment shader
@@ -144,7 +144,7 @@ setShaders(const char *nVertx, const char *nFrag)
         return (progShader);
 }
 
-static GLuint
+[[maybe_unused]] static inline GLuint
 setShaders_str(const char *nVertx, const char *nFrag)
 {
         GLuint vertexShader, fragmentShader;

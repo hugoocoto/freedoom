@@ -1,57 +1,115 @@
 #ifndef SETTINGS_H_
 #define SETTINGS_H_
 
-/* This code is quite weird as I migrate the original settings.h
- * that was a file of defines to vshcfp and this is the easiest
- * way to do that I think */
-
-
-/* Mouse sensibility */
-static float MOUSE_SENS_X = 2.0f;
-static float MOUSE_SENS_Y = 2.0f;
-static float MOUSE_FIRST_PERSON_SENS_X = 2.0f;
-static float MOUSE_FIRST_PERSON_SENS_Y = 4.0f;
-static float MOUSE_REDUCTION = 0.001f;
-
-static bool SHOW_FPS = true;
-
-/* Enable VSync. FPS limited to screen refresh rate */
-static bool VSYNC = true;
-
-static bool show_collision_point = false;
-static bool draw_collision_sphere = false;
-
-extern "C" {
-/* Literally fuck cpp */
-#include "../thirdparty/vshcfp/include/vshcfp.h"
-}
-
+#include <cctype>
 #include <cstdio>
+#include <fstream>
+#include <string>
 
-#include "cstdlib"
-#include "cstring"
+inline float MOUSE_SENS_X = 2.0f;
+inline float MOUSE_SENS_Y = 2.0f;
+inline float MOUSE_FIRST_PERSON_SENS_X = 2.0f;
+inline float MOUSE_FIRST_PERSON_SENS_Y = 4.0f;
+inline float MOUSE_REDUCTION = 0.001f;
 
-__attribute__((constructor)) static void
-__init__()
+inline bool SHOW_FPS = true;
+inline bool VSYNC = true;
+inline bool show_collision_point = false;
+inline bool draw_collision_sphere = false;
+
+inline bool settings_loaded = false;
+
+inline std::string
+trim_copy(const std::string &text)
 {
-        HcfOpts opts;
-        char *s;
+        size_t begin = 0;
+        size_t end = text.size();
 
-        opts = hcf_load("settings.hcf");
+        while (begin < end && std::isspace(static_cast<unsigned char>(text[begin]))) {
+                ++begin;
+        }
 
-        if ((s = hcf_get(opts, "mouse", "sens_x"))) MOUSE_SENS_X = atof(s);
-        if ((s = hcf_get(opts, "mouse", "sens_y"))) MOUSE_SENS_Y = atof(s);
-        if ((s = hcf_get(opts, "mouse", "sens_x"))) MOUSE_FIRST_PERSON_SENS_X = atof(s);
-        if ((s = hcf_get(opts, "mouse", "sens_y"))) MOUSE_FIRST_PERSON_SENS_Y = atof(s);
-        if ((s = hcf_get(opts, "mouse", "reduction"))) MOUSE_REDUCTION = atof(s);
-        if ((s = hcf_get(opts, "options", "show_fps"))) SHOW_FPS = 0 == strcmp(s, "on");
-        if ((s = hcf_get(opts, "options", "vsync"))) VSYNC = 0 == strcmp(s, "on");
+        while (end > begin && std::isspace(static_cast<unsigned char>(text[end - 1]))) {
+                --end;
+        }
 
-        if ((s = hcf_get(opts, "dev", "show_collision_point"))) show_collision_point = 0 == strcmp(s, "on");
-        if ((s = hcf_get(opts, "dev", "draw_collision_sphere"))) draw_collision_sphere = 0 == strcmp(s, "on");
-
-        hcf_destroy(&opts);
+        return text.substr(begin, end - begin);
 }
 
+inline bool
+parse_bool_value(const std::string &value)
+{
+        return value == "on" || value == "true" || value == "1" || value == "yes";
+}
+
+inline void
+apply_setting(const std::string &section, const std::string &key, const std::string &value)
+{
+        if (section == "mouse") {
+                if (key == "sens_x") MOUSE_SENS_X = std::stof(value);
+                if (key == "sens_y") MOUSE_SENS_Y = std::stof(value);
+                if (key == "first_person_sens_x") MOUSE_FIRST_PERSON_SENS_X = std::stof(value);
+                if (key == "first_person_sens_y") MOUSE_FIRST_PERSON_SENS_Y = std::stof(value);
+                if (key == "reduction") MOUSE_REDUCTION = std::stof(value);
+                return;
+        }
+
+        if (section == "options") {
+                if (key == "show_fps") SHOW_FPS = parse_bool_value(value);
+                if (key == "vsync") VSYNC = parse_bool_value(value);
+                return;
+        }
+
+        if (section == "dev") {
+                if (key == "show_collision_point") show_collision_point = parse_bool_value(value);
+                if (key == "draw_collision_sphere") draw_collision_sphere = parse_bool_value(value);
+        }
+}
+
+inline void
+load_settings(const char *path = "settings.hcf")
+{
+        if (settings_loaded) {
+                return;
+        }
+
+        settings_loaded = true;
+
+        std::ifstream input(path);
+        if (!input.is_open()) {
+            std::fprintf(stderr, "Warning: could not open %s, using default settings\n", path);
+            return;
+        }
+
+        std::string section;
+        std::string line;
+
+        while (std::getline(input, line)) {
+                std::string trimmed = trim_copy(line);
+
+                if (trimmed.empty() || trimmed[0] == '#') {
+                        continue;
+                }
+
+                if (trimmed.back() == ':') {
+                        section = trim_copy(trimmed.substr(0, trimmed.size() - 1));
+                        continue;
+                }
+
+                size_t split = trimmed.find_first_of(" \t");
+                if (split == std::string::npos) {
+                        continue;
+                }
+
+                std::string key = trimmed.substr(0, split);
+                std::string value = trim_copy(trimmed.substr(split));
+
+                if (value.empty()) {
+                        continue;
+                }
+
+                apply_setting(section, key, value);
+        }
+}
 
 #endif // SETTINGS_H_

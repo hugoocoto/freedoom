@@ -1,9 +1,0 @@
-[submodule "thirdparty/frog"]
-	path = thirdparty/frog
-	url = https://github.com/hugocotoflorez/frog
-[submodule "thirdparty/load_obj"]
-	path = thirdparty/load_obj
-	url = https://github.com/hugocotoflorez/load_obj
-[submodule "thirdparty/vshcfp"]
-	path = thirdparty/vshcfp
-	url = https://github.com/hugocotoflorez/vshcfp

@@ -1,3 +1,6 @@
+#ifndef TEMPLATE_H_
+#define TEMPLATE_H_
+
 #include "actor.h"
 #include "camera.h"
 #include "mesh.h"
@@ -44,14 +47,14 @@ calc_x2(float x1, float y1, float y2, float &x2)
                 return false;
         }
 
-        x2 = fabsl(sqrt(value));
+        x2 = std::fabs(std::sqrt(value));
         return true;
 }
 
 extern double *interframe_time();
 extern int mouse_mode;
-Mesh *crosshair1;
-Mesh *crosshair2;
+inline Mesh *crosshair1 = nullptr;
+inline Mesh *crosshair2 = nullptr;
 
 static void
 __1person_handler(GLFWwindow *window, Scene *scene)
@@ -133,8 +136,6 @@ __1person_handler(GLFWwindow *window, Scene *scene)
         vec3 dirf = -normalize(vec3(m[2])) * SPEED;
         vec3 right = normalize(vec3(m[0])) * SPEED;
         // vec3 up = normalize(vec3(m[1])) * SPEED;
-        vec3 posi = actor->get_position();
-
         static vec3 movement = vec3(0.0f);
         static vec3 current_speed = vec3(0.0f);
         current_speed *= pow(0.001f, T);
@@ -471,35 +472,39 @@ class Template
                 Shape::cube_vao(&vao, &indexes_n, width, height, width);
                 PianoKey *key_colliders[2 * piano_keys_white + piano_keys_black];
 
-                int i;
+                int collider_index = 0;
                 int j;
-                for (i = 0; i < piano_keys_white; i++) {
-                        key_colliders[i] = new PianoKey(i, 0xffffff, false, false, true, width / 2.0f);
-                        key_colliders[i]->rotate(-0.02f, vec3(0.0f, 1.0f, 0.0f));
-                        key_colliders[i]->translate(vec3(-0.734f + padding * i, 0.73f, 0.65f));
-                        key_colliders[i]->set_vao(vao, indexes_n);
-                        key_colliders[i]->get_sphere_collider()->set_on_collide(__play_pianokey);
-                        piano->attach(key_colliders[i]);
+                for (int white_note = 0; white_note < piano_keys_white; white_note++) {
+                        key_colliders[collider_index] = new PianoKey(white_note, 0xffffff, false, false, true, width / 2.0f);
+                        key_colliders[collider_index]->rotate(-0.02f, vec3(0.0f, 1.0f, 0.0f));
+                        key_colliders[collider_index]->translate(vec3(-0.734f + padding * white_note, 0.73f, 0.65f));
+                        key_colliders[collider_index]->set_vao(vao, indexes_n);
+                        key_colliders[collider_index]->get_sphere_collider()->set_on_collide(__play_pianokey);
+                        piano->attach(key_colliders[collider_index]);
+                        collider_index++;
                 }
 
                 for (j = 0; j < piano_keys_black; j++) {
-                        key_colliders[++i] = new PianoKey(i, 0xffffff, false, false, true, width / 2.0f);
-                        key_colliders[i]->rotate(-0.02f, vec3(0.0f, 1.0f, 0.0f));
-                        key_colliders[i]->translate(vec3(-0.75f - 0.022f + padding * padding_black[j], 0.75f, 0.65f - 0.05));
-                        key_colliders[i]->set_vao(vao, indexes_n);
-                        key_colliders[i]->get_sphere_collider()->set_on_collide(__play_pianokey);
-                        piano->attach(key_colliders[i]);
+                        int note_id = piano_keys_white + j;
+                        key_colliders[collider_index] = new PianoKey(note_id, 0xffffff, false, false, true, width / 2.0f);
+                        key_colliders[collider_index]->rotate(-0.02f, vec3(0.0f, 1.0f, 0.0f));
+                        key_colliders[collider_index]->translate(vec3(-0.75f - 0.022f + padding * padding_black[j], 0.75f, 0.65f - 0.05));
+                        key_colliders[collider_index]->set_vao(vao, indexes_n);
+                        key_colliders[collider_index]->get_sphere_collider()->set_on_collide(__play_pianokey);
+                        piano->attach(key_colliders[collider_index]);
+                        collider_index++;
                 }
 
 #define DOUBLE_COLLISION_LAYER 1
 #if defined(DOUBLE_COLLISION_LAYER) && DOUBLE_COLLISION_LAYER
                 for (j = 0; j < piano_keys_white; j++) {
-                        key_colliders[++i] = new PianoKey(j, 0xffffff, false, false, true, width / 2.0f);
-                        key_colliders[i]->rotate(-0.02f, vec3(0.0f, 1.0f, 0.0f));
-                        key_colliders[i]->translate(vec3(-0.734f + padding * j, 0.73, 0.65f - width / 2));
-                        key_colliders[i]->set_vao(vao, indexes_n);
-                        key_colliders[i]->get_sphere_collider()->set_on_collide(__play_pianokey);
-                        piano->attach(key_colliders[i]);
+                        key_colliders[collider_index] = new PianoKey(j, 0xffffff, false, false, true, width / 2.0f);
+                        key_colliders[collider_index]->rotate(-0.02f, vec3(0.0f, 1.0f, 0.0f));
+                        key_colliders[collider_index]->translate(vec3(-0.734f + padding * j, 0.73, 0.65f - width / 2));
+                        key_colliders[collider_index]->set_vao(vao, indexes_n);
+                        key_colliders[collider_index]->get_sphere_collider()->set_on_collide(__play_pianokey);
+                        piano->attach(key_colliders[collider_index]);
+                        collider_index++;
                 }
 #endif
 
@@ -511,3 +516,5 @@ class Template
                 return s;
         }
 };
+
+#endif // TEMPLATE_H_

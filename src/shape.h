@@ -1,3 +1,6 @@
+#ifndef SHAPE_H_
+#define SHAPE_H_
+
 #include "camview.h"
 
 #include "actor.h"
@@ -34,7 +37,7 @@ class Shape
         {
         }
 
-        static Mesh *crosshair(float l)
+        static Mesh *crosshair(float)
         {
                 Mesh *m = new Mesh("crosshair");
                 GLuint vao, indexes_n;
@@ -43,7 +46,7 @@ class Shape
                 return m;
         }
 
-        static Mesh *hand(float l)
+        static Mesh *hand(float)
         {
                 Mesh *m = new Mesh("fullscreen");
                 GLuint vao, indexes_n;
@@ -324,7 +327,7 @@ class Shape
 
 
         static void
-        __square(GLuint *VAO, GLuint *indexes_n, float x, float texture_scale = 1, float relation = 1)
+        __square(GLuint *VAO, GLuint *indexes_n, float x, float = 1, float = 1)
         {
                 float _x = x / 2.0f;
                 float vertices[] = {
@@ -596,3 +599,5 @@ class Shape
                 __gen_vao(VAO, SIZE(vertices), vertices, SIZE(indices), indices, opts);
         }
 };
+
+#endif // SHAPE_H_
