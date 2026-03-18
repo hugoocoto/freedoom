@@ -18,7 +18,7 @@ class Actor : public Mesh
         float body_height;
 
     public:
-        Actor(char *name)
+        Actor(const char *name)
         : Mesh(name, 0x93ECFB),
           camera(nullptr),
           camera_offset_x(2.0f),

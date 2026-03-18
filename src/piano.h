@@ -1,3 +1,6 @@
+#ifndef PIANO_H_
+#define PIANO_H_
+
 #include "mesh.h"
 #include "scene.h"
 #include <cassert>
@@ -104,7 +107,7 @@ class PianoKey : public Mesh
         : Mesh("PianoKey", a, b, c, d, e),
           note_id(id)
         {
-                assert(note_id < sizeof notes / sizeof notes[0]);
+                assert(static_cast<size_t>(note_id) < sizeof notes / sizeof notes[0]);
         }
 
         void play()
@@ -112,3 +115,5 @@ class PianoKey : public Mesh
                 ((Scene *) scene)->repr_audio(notes[note_id]);
         }
 };
+
+#endif // PIANO_H_

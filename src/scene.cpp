@@ -19,7 +19,7 @@ Scene::get_camera(int index)
         if (index < 0)
                 index = camera_index;
 
-        if (index >= cameras.size())
+        if (static_cast<size_t>(index) >= cameras.size())
                 PANIC("Can not locate camera");
 
         return cameras.at(index);
@@ -151,13 +151,13 @@ Scene::get_raycast_collision(vec2 mouse)
                 __m.at(clickedObject)->get_sphere_collider()->on_collision();
 
                 /* Represent collision point */
-#if defined(show_collision_point) && show_collision_point
-                Mesh *c = Shape::cube_nocollider(0.1f);
-                c->set_shader(__m.at(0)->get_shader()); // TODO
-                c->set_scene(this);
-                __m.push_back(c);
-                c->translate(_q);
-#endif
+                if (show_collision_point) {
+                        Mesh *c = Shape::cube_nocollider(0.1f);
+                        c->set_shader(__m.at(0)->get_shader()); // TODO
+                        c->set_scene(this);
+                        __m.push_back(c);
+                        c->translate(_q);
+                }
 
                 // repr_audio("assets/pistol.wav");
                 return __m.at(clickedObject);

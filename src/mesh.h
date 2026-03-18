@@ -34,8 +34,8 @@ class SphereCollider
     private:
         float radius;
         Mesh *parent;
-        Mesh *sphere;
         bool active;
+        Mesh *sphere;
         vector<on_collide_func> on_collide;
 
     public:
@@ -105,7 +105,7 @@ class Mesh
         const bool need_render;
 
     private:
-        char *name;
+        const char *name;
         GLuint vao;
         GLuint indexes_n;
         bool printable;
@@ -129,7 +129,7 @@ class Mesh
         int dynamic_camera;
 
     public:
-        Mesh(char *name, int _color = 0xFFFFFF, bool _printable = true, bool render = false, bool has_collider = true, float collider_radius = 0.7f)
+        Mesh(const char *name, int _color = 0xFFFFFF, bool _printable = true, bool render = false, bool has_collider = true, float collider_radius = 0.7f)
         : need_render(render),
           name(name),
           vao(0),
@@ -142,12 +142,12 @@ class Mesh
           parent(nullptr),
           __shader(0),
           before_draw(nullptr),
-          scene(nullptr),
-          dynamic_camera(-1),
           sphere_collider(nullptr),
           is_selected(false),
           input_handler(nullptr),
-          attached_camera(nullptr)
+          attached_camera(nullptr),
+          scene(nullptr),
+          dynamic_camera(-1)
         {
                 if (has_collider) {
                         // printf("Creating collider sphere with r=%f for mesh %s\n", collider_radius, name);

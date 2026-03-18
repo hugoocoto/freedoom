@@ -3,6 +3,7 @@
 #include "scene.h"
 #include "settings.h"
 #include "shape.h"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
@@ -13,8 +14,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 
-
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #include "../thirdparty/load_obj/load_obj.h"
@@ -325,7 +324,7 @@ Mesh::draw(mat4 _model, int _do)
 
                 } else if (texture != 0) {
                         printf("Texture %d failed!\n", texture);
-                        exit(texture);
+                        continue;
                 }
         }
 
@@ -441,19 +440,14 @@ Mesh::add_texture_image(const char *path, int how)
 
         if (image == NULL) {
                 fprintf(stderr, "Failed to load texture '%s'\n", path);
-                exit(0);
-        }
-
-        if (image == NULL) {
-                printf("[ERROR] Material has no image data!\n");
                 return;
         }
 
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, how ?: GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, how ?: GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, how != 0 ? how : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, how != 0 ? how : GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 

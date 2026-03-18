@@ -13,12 +13,6 @@ using namespace glm;
 
 #include "settings.h"
 
-#if defined(SHOW_FPS) && SHOW_FPS
-#define show_fps(...) printf(__VA_ARGS__)
-#else
-#define show_fps(...)
-#endif
-
 #define HexColor(hex_color)                     \
         ((hex_color & 0xFF0000) >> 16) / 256.0, \
         ((hex_color & 0xFF00) >> 8) / 256.0,    \
@@ -80,7 +74,9 @@ fps()
 
         if (t - last_time >= 1) {
                 last_time = t;
-                show_fps("[FPS] %u\n", fps);
+                if (SHOW_FPS) {
+                        printf("[FPS] %u\n", fps);
+                }
                 fps = 0;
         }
 }
@@ -124,6 +120,8 @@ mainloop(GLFWwindow *window)
 int
 main()
 {
+        load_settings();
+
         if (!glfwInit()) {
                 fprintf(stderr, "Can not init glfw\n");
                 exit(1);
@@ -154,10 +152,7 @@ main()
                 return 1;
         }
 
-
-#if defined(VSYNC)
-        glfwSwapInterval(VSYNC);
-#endif
+        glfwSwapInterval(VSYNC ? 1 : 0);
 
 
         glClearColor(color4split(BG_COLOR));

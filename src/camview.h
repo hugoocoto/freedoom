@@ -64,7 +64,7 @@ class CamView : public Mesh
         }
 
     public:
-        CamView(char *name)
+        CamView(const char *name)
         : Mesh(name, 0xFF07E6, true, true),
           render_texture(0),
           deph_buffer(0),
@@ -79,8 +79,8 @@ class CamView : public Mesh
 
         void config(int h = 0, int w = 0)
         {
-                width = w ?: 800;
-                heigth = h ?: 800;
+                width = (w != 0) ? w : 800;
+                heigth = (h != 0) ? h : 800;
                 create_framebuffer();
                 gen_texture();
                 gen_depth_buffer();
@@ -103,7 +103,9 @@ class CamView : public Mesh
 
         void unbind()
         {
-                glGenerateMipmap(render_texture);
+                glBindTexture(GL_TEXTURE_2D, render_texture);
+                glGenerateMipmap(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, 0);
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prev_fb);
                 glViewport(prev_vp[0], prev_vp[1], prev_vp[2], prev_vp[3]);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
